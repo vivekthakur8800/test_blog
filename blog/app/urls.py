@@ -1,6 +1,10 @@
 from django.urls import path
-from app.views import Home,SignupView
+from app.views import Home,SignupView,DashboardView,LoginView,LogoutView
+from django.contrib.auth import views as _views
 urlpatterns=[
     path("",Home.as_view(),name="home"),
     path("signup/",SignupView.as_view(),name="signup"),
+    path("dashboard/",DashboardView.as_view(),name="dashboard"),
+    path('login/',LoginView.as_view(),name="login"),
+    path("logout/",LogoutView.as_view(),name="logout"),
 ]

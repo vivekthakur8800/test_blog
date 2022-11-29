@@ -10,7 +10,7 @@ class Signupform(forms.ModelForm):
 class Blogform(forms.ModelForm):
     class Meta:
         model=Blog
-        fields=['user','title','discription']
+        fields=['title','discription']
 
 class Commentform(forms.ModelForm):
     class Meta:

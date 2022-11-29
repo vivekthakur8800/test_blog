@@ -1,21 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog|Dashboard</title>
-</head>
-<body>
-    <h1>Dashboard Page</h1>
-    <div>
-        {% for b in blog %}
-        <h2>{{b.title}}</h2>
-        <br>
-        {{b.discription}}
-        <br>
-        {{b.user}}
-        {% endfor %}
-        </div>
-</body>
-</html>
+{% include "app/base.html" %}
+{% load static %}
+{% block side %}
+<div class="border-right border-warning h-100">Author</div>
+<!-- <h3>{{name}} {{name2}}</h3> -->
+<!-- <button type="button" class="btn btn danger">Login Count:<span class="badge badge-light">{{ct}}</span></button> -->
+{% endblock side %}
+{% block content %}
+
+<div class="col-sm-10">
+<!-- {% if messages %}
+  {% for message in messages %}
+      <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} mt-3" role="alert">{{ message }}</div>
+  {% endfor %}
+{% endif %} -->
+    <h3 class="text-white">Dashboard Page</h3>
+    {% if perms.app.add_blog %}
+    <a href="{% url 'blogadd' %}" class="btn btn-success">Add Post</a>
+    {% endif %}
+    <div class="container">
+        <table class="table caption-top text-black">
+            <caption class="text-center">List of Posts</caption>
+            <thead>  
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Title</th>
+                <th scope="col">discription</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            {% if blog %}
+            {% for b in blog %}
+            <tbody>
+              <tr>
+                <th scope="row">{{b.id}}</th>
+                <td>{{b.title}}</td>
+                <td>{{b.discription}}</td>
+                <td>
+                {% if perms.app.change_blog %}
+                <a href="{% url 'updateblog' b.id %}" class="btn btn-warning">Edit</a>
+                {% endif %}
+                {% if perms.app.change_blog %}
+                <form action="{% url 'deleteblog' b.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="submit" class="btn btn-danger btn-sm mt-2" value="Delete">
+                </form>
+                </td>
+              </tr>
+            </tbody>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+          </table>
+    </div>
+</div>
+
+{% endblock content %}

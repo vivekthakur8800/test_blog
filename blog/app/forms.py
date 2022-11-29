@@ -5,7 +5,7 @@ from app.models import Blog,Comment
 class Signupform(forms.ModelForm):
     class Meta:
         model=User
-        fields=['first_name','last_name','username','email','password']
+        fields=['username','email','password']
 
 class Blogform(forms.ModelForm):
     class Meta:

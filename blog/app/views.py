@@ -4,7 +4,8 @@ from app.forms import UserCreationForm,Blogform
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.forms import AuthenticationForm
 from app.models import Blog,Comment
-from django.contrib.auth.views import PasswordChangeView
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 # Create your views here.
 class Home(TemplateView):
     template_name="app/home.html"
@@ -39,17 +40,19 @@ class SignupView(TemplateView):
         fm=UserCreationForm()
         return render(request,self.template_name,{"form":fm})
 
+@method_decorator(login_required,name="dispatch")
 class DashboardView(TemplateView):
     template_name="app/dashboard.html"
-    blog=Blog.objects.all()
-
-    def get_context(self,request,*args,**kwargs):
-        context={}
-        context["blog"]=self.blog
-        return context
 
     def get(self,request,*args,**kwargs):
-        return render(request,self.template_name,self.get_context(self,request,*args,**kwargs))
+        if request.user.is_authenticated:
+            context={}
+            user=request.user
+            context["blog"]=Blog.objects.filter(user=user)
+            context["name"]=user.first_name+user.last_name
+            return render(request,self.template_name,context)
+        else:
+            return HttpResponseRedirect('/login/')
 
 class LoginView(TemplateView):
     template_name="app/login.html"
@@ -72,11 +75,13 @@ class LoginView(TemplateView):
         else:
             return render(request,self.template_name,{"form":fm})
 
+@method_decorator(login_required,name="dispatch")
 class LogoutView(TemplateView):
     def get(self,request):
         logout(request)
         return HttpResponseRedirect("/")
 
+@method_decorator(login_required,name="dispatch")
 class BlogaddView(TemplateView):
     template_name="app/addblog.html"
 
@@ -98,6 +103,7 @@ class BlogaddView(TemplateView):
         else:
             return render(request,self.template_name,{"form":fm})
 
+@method_decorator(login_required,name="dispatch")
 class UpdateblogView(TemplateView):
     template_name="app/updateblog.html"
 
@@ -117,9 +123,19 @@ class UpdateblogView(TemplateView):
         else:
             return render(request,self.template,{"form":fm})
 
+@method_decorator(login_required,name="dispatch")
 class DeleteblogView(TemplateView):
     def post(self,request,*args,**kwargs):
-        print("kwargs",kwargs["id"])
         pi=Blog.objects.get(id=kwargs["id"])
         pi.delete()
         return HttpResponseRedirect("/dashboard/")
+
+class SearchView(TemplateView):
+    template_name="app/home.html"
+
+    def get(self,request,*args,**kwargs):
+        query=request.GET["query"]
+        blog=Blog.objects.filter(title__icontains=query)|Blog.objects.filter(discription__icontains=query)|Blog.objects.filter(user__username=query)|Blog.objects.filter(user__first_name=query)|Blog.objects.filter(user__last_name=query)|Blog.objects.filter(title__startswith=query)|Blog.objects.filter(discription__startswith=query)
+        context={}
+        context["blog"]=blog
+        return render(request,self.template_name,context)
